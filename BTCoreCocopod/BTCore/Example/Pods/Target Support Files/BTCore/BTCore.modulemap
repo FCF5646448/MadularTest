@@ -1,0 +1,6 @@
+framework module BTCore {
+  umbrella header "BTCore-umbrella.h"
+
+  export *
+  module * { export * }
+}

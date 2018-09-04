@@ -1,0 +1,51 @@
+{
+  "name": "BTCore",
+  "version": "0.2.2",
+  "summary": "BT学院App中基础文件、公共文件、第三方库等集成框架库",
+  "description": "'BT学院App中基础文件、公共文件、第三方库等集成框架库,gogogogo'",
+  "homepage": "https://caifan@gitlab.btclass.cn/caifan/BTCoreDemo",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": {
+    "caifan": "2998000457@qq.com"
+  },
+  "source": {
+    "git": "https://caifan@gitlab.btclass.cn/caifan/BTCoreDemo.git",
+    "tag": "0.2.2"
+  },
+  "platforms": {
+    "ios": "9.0"
+  },
+  "requires_arc": true,
+  "frameworks": [
+    "UIKit",
+    "AVFoundation",
+    "QuartzCore"
+  ],
+  "source_files": "BTCore/Classes/prefixHeader.h",
+  "dependencies": {
+    "Masonry": [
+      "~> 1.0.2"
+    ]
+  },
+  "subspecs": [
+    {
+      "name": "Kit",
+      "source_files": "BTCore/Classes/Kit/**/*.{h,m}",
+      "public_header_files": "BTCore/Classes/Kit/**/*.h",
+      "dependencies": {
+        "BTCore/ThirdParty": [
+
+        ]
+      }
+    },
+    {
+      "name": "ThirdParty",
+      "source_files": "BTCore/Classes/ThirdParty/**/*.{h,m}",
+      "public_header_files": "BTCore/Classes/ThirdParty/**/*.h",
+      "resources": "BTCore/Assets/SVProgressHUD.bundle"
+    }
+  ]
+}

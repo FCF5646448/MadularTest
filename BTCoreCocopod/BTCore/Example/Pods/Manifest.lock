@@ -1,0 +1,31 @@
+PODS:
+  - BTCore (0.2.2):
+    - BTCore/Kit (= 0.2.2)
+    - BTCore/ThirdParty (= 0.2.2)
+    - Masonry (~> 1.0.2)
+  - BTCore/Kit (0.2.2):
+    - BTCore/ThirdParty
+    - Masonry (~> 1.0.2)
+  - BTCore/ThirdParty (0.2.2):
+    - Masonry (~> 1.0.2)
+  - Masonry (1.0.2)
+
+DEPENDENCIES:
+  - BTCore (from `../`)
+  - Masonry (~> 1.0.2)
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - Masonry
+
+EXTERNAL SOURCES:
+  BTCore:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  BTCore: c8184320734f7a7dde70fb3658dd1737b86f444b
+  Masonry: 7c429b56da9d4ee0bbb3ed77a5ea710d6a5df39e
+
+PODFILE CHECKSUM: 9a302e25e25805388adb7bfd087ca7542ef897a6
+
+COCOAPODS: 1.6.0.beta.1
