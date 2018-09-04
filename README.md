@@ -365,7 +365,7 @@ $ lipo -create BTCoreV7 BTCore64 -output BTCoreV764 //将BTCoreV7 BTCore64整合
 ###### 3、dyld: Library not loaded: @rpath/libswiftCore.dylib (Demo里没有swift bridge导致的锅)
 说明framework里有swift类，但是demo中没有创建swift bridge。所以去创建一个就好了
 
-######4、Reason: image not found
+###### 4、Reason: image not found
 embedded没有framework导致的。
 
 ###### 5、无法使用framework里的类(request改成optional导致的锅)
@@ -382,10 +382,14 @@ embedded没有framework导致的。
 * 5、framework自动正好到主项目的工具链
 
 
-[喵神的打造让人愉快的框架](https://onevcat.com/2016/01/create-framework/)
-[小鱼的dump砸壳](http://zhoulingyu.com/2016/08/30/iOS%E6%94%BB%E9%98%B2%E2%80%94%E2%80%94%EF%BC%88%E5%9B%9B%EF%BC%89class-dump%20%E4%B8%8E%20Dumpdecrypted%20%E4%BD%BF%E7%94%A8/)
-[framework中使用cocoapod](https://www.jianshu.com/p/8650864c6c15)
-[豆瓣模块化](http://lincode.github.io/Modularity)
+[喵神的打造让人愉快的框架](https://onevcat.com/2016/01/create-framework/) 
+
+[小鱼的dump砸壳](http://zhoulingyu.com/2016/08/30/iOS%E6%94%BB%E9%98%B2%E2%80%94%E2%80%94%EF%BC%88%E5%9B%9B%EF%BC%89class-dump%20%E4%B8%8E%20Dumpdecrypted%20%E4%BD%BF%E7%94%A8/) 
+
+[framework中使用cocoapod](https://www.jianshu.com/p/8650864c6c15) 
+
+[豆瓣模块化](http://lincode.github.io/Modularity) 
+
 [组件化——动态库实践](http://www.cocoachina.com/ios/20170427/19136.html)
 
 
