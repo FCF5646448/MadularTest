@@ -1,0 +1,6 @@
+framework module Pods_TestUseFramework {
+  umbrella header "Pods-TestUseFramework-umbrella.h"
+
+  export *
+  module * { export * }
+}

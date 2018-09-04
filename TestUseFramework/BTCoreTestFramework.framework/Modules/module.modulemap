@@ -1,0 +1,11 @@
+framework module BTCoreTestFramework {
+  umbrella header "BTCoreTestFramework.h"
+
+  export *
+  module * { export * }
+}
+
+module BTCoreTestFramework.Swift {
+    header "BTCoreTestFramework-Swift.h"
+    requires objc
+}
