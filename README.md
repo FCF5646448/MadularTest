@@ -211,184 +211,183 @@ resource和resource_bundles的差异，参考[简书](https://juejin.im/post/5a7
 这里的XX指的是pod包的名称，其次要注意的是swift类应该用@objc标注声明
 
 ###### 5、编译不通过
+Returned an unsuccessful exit code. You can use `--verbose` for more information.
+打成pod包的前提就是编译一定要通过，所以这个没有捷径可走
 
-​Returned an unsuccessful exit code. You can use `--verbose` for more information.
-​打成pod包的前提就是编译一定要通过，所以这个没有捷径可走
-​
-​###### 6、库循环依赖问题
-​There is a circular dependency between BTCore/ThirdParty and BTCore/Kit 
-​
-​出现这个问题的原因是由于pod库里面有子分支，每个子分支也是一个单独的pod库，所以分支之间文件的引用如果不要pch的话，就需要使用dependency做依赖。因为子分支有可能会有相互引用到对方文件的问题，所以如果使用dependency，就有可能会相互依赖的问题，最后导致circular dependency。
-​
-​目前的解决问题就是子分支也解耦。如果子分支无法解耦，那就使用pch全局引入需要用到的文件。不过这也导致一个问题，那就是子分支就没法单独做pod使用了。所以最好的解决方案是解耦。
-​
-​###### 7、pch使用
-​
-​语法： prefix_header_file: 预编译头文件路径，将该文件的内容插入到Pod的pch文件内 
-​1:ERROR | [iOS] unknown: Encountered an unknown error (No such file or directory @ rb_sysopen - /private/var/folders/n2/0fyx87s539j43pqj65tnwccc0000gn/T/CocoaPods-Lint-20180829-11315-7jhkz-BTCore/Pods/BTCore/BTCore/Classes/prefixHeader.pch) during validation.
-​
-​目前得出的结论，pch除了能在PodDemo中使用，在pod库中，完全就是绊脚石般的存在
-​
-​###### 8、压死骆驼的最后一根稻草 
-​
-​xcodebuild: Returned an unsuccessful exit code. You can use `--verbose` for more information.
-​
-​这他妈不知道是什么原因呀
-​
-​初步估计是因为pch的问题。查看了很多第三方pod，发现压根不使用pch这玩意。而且每次error后的note也都是提示pch里的import文件not found。
-​
-​所以，首先。准备好子分支之间的拆分。不能出现循环依赖的问题，不能相互import，总之pch没有作用。
-​
-​掉进坑里，挣扎出不来了！！
-​
-​pod lib lint --allow-warnings 忽略警告的验证过程
-​
-​pod repo push mySpec myLibrary.podspec —allow-warnings  
-​
-​
-​
-​##### 9、pod存在的问题：
-​
-​###### 1、文件夹问题
-​
-​pod暴露的东西只存在public_header_files中，而且目前没有找到文件夹区分层次关系的问题。
-​
-​###### 2、生成的pod与实际能够使用的pod有区别
-​
-​生成的pod在demo中和实际验证之后pod update下来的pod文件层次是不一样的，感觉非常不友好。而且及时生成了pod，验证也存在很多问题，且问题难以定位。
-​
-​
-​[cocoapod创建私有库](http://blog.wtlucky.com/blog/2015/02/26/create-private-podspec/) 
-​
-​[podspec资源文件的引用](https://juejin.im/post/5a77fb8df265da4e99576702) 
-​
-​[写podspec](https://segmentfault.com/a/1190000012269307) 
-​
-​[cocoapod guide](https://guides.cocoapods.org/) 
-​
-​
-​
-​## cocoa touch framework实践
-​##### 1、什么是动态库
-​库Library是一段编译好的二进制文件，如果想自己的实现代码不暴露给别人，就可以使用库的形式进行封装，编译的时候只需要link就好。链接又存在静态链接和动态链接两种方式，于是便产生了静态库和动态库。
-​
-​静态库即.a文件(windows的lib)，静态库编译的时候会将二进制文件直接copy进目标程序中，之后将随着一起加载，所以也就导致目标文件太大的问题。
-​
-​动态库则是.tab、.dylib文件，与动态库不同的是编译的时候不会被copy，而是只在目标文件中存一份动态库的引用。它不会导致体积问题，但是动态载入的时候也会导致一些性能损耗。
-​
-​Framework是一直打包方式，它将二进制文件、头文件、资源文件打包到一起。
-​
-​##### 、创建自己的framework
-​###### 1、创建framework
-​打开xcode 选择创建 cocoa touch framework 就可以了。
-​这里有几点注意：
-​* 创建动态库需要去setting中将mach-Type改成Dynamic Library
-​* 如果要引入其他的framework，需要去setting中将**Allow non-modular includes in Framework Modules** 改成YES。
-​* 如果有使用swift，需要去设置好swift的版本
-​* framework不允许存在其他的framework
-​* 如果是Swift&OC混编的framework，则要把swift中使用到的OC头文件在Header中放到public中，因为framework不支持bridge
-​* 将要对外的头文件也放到Header的public中
-​* 把需要添加的依赖库加上，尤其是使用了第三方，比如wechatsdk的
-​
-​###### 2、使用framework
-​* 将framework拖进来后，将framework copy一份。确保Embedded Binaries存在你的framework
-​* 如果framework中有swift文件而当前工程还没有swift文件，则需要先创建一个swift bridge。
-​* 将原来framework依赖到的第三方也要pod进来
-​
-​###### 3、framework使用其他第三方framework
-​* 苹果禁止在Dynamic Framework中使用Framework。比如alipay。而pod的framework也只是将引用打包进去。所以这种依赖要在自己的framework的readme中注释清楚。
-​
-​###### 4、给framework添加armv7s架构
-​模拟器对应的内核框架中，32位处理器对应的是i386，64位处理器对应的是x86_64
-​
-​真机内核情况如下：
-​
-​armv7: iPhone4 以下机型、iPad mini、iPod、iPad3以下
-​
-​armv7s: iPhone5、iPhone5C、iPad4
-​
-​arm64: iPhone5s以上、iPad air、iPad mini2
-​
-​在Architectures添加完armv7s后，一直报error: Invalid bitcode signature ;  clang: error: linker command failed with exit code 1 (use -v to see invocation)。
-​
-​解决的步骤就是：将DeviceData删掉，然后给所有pod导进来的framework添加上armv7s。重新编译就OK了。
-​
-​##### 3、整合framework，将模拟器和真机的debug、release包整合到一起
-​首先将每一次build都只有一个包产生。而要产生release和debug包得分别在release和debug下进行编译，这样在Debug-iphoneos下两个文件夹才有对应的包。然后在将Build Active Architecture Only设置成NO(包括pod库里的target)，这样才能在切换真机与模拟器的同时编译出对应的iphoneos和iphonesimulator包
-​
-​使用 [命令行打包](http://msching.github.io/blog/2014/05/05/custom-framework-merging/)  
-​
-​
-​```
-​//查看包的内核架构有哪些：
-​$lipo -info /Users/fengcaifan/Library/Developer/Xcode/DerivedData/BTCore-foehvkpuvmgklxekqrhynchxldkr/Build/Products/Release-iphoneos/BTCore.framework/BTCore 
-​// armv7 armv7s arm64 
-​```
-​
-​```
-​//将Debug环境下的真机和模拟器一同打包：
-​$cd 到包目录
-​
-​$lipo -create Debug-iphoneos/BTCore.framework/BTCore Debug-iphonesimulator/BTCore.framework/BTCore -output BTCoreDebugFramework //结束后会产生一个包
-​
-​$lipo -info BTCoreDebugFramework //查看包内容 Architectures in the fat file: BTCoreDebugFramework are: i386 x86_64 armv7 armv7s arm64
-​
-​//这里执行完是整合出一个可执行文件，还并不是.framework。所以只需将这个可执行文件将上述任意framework里的可执行文件替换掉就可以使用了。
-​```
-​
-​* 这里碰到一个问题，使用cocoapod的库，使用Aggregate 脚本打包一直报swift找不到pod库。
-​
-​##### 4、framework结合cocoapod的实践
-​framework中使用cocoapod是将需要依赖的第三方库以pod的形式导入进来。但是要注意的一点就是framework如果是swift项目或者保存swift混编，则需要将pod库打包成framework。
-​
-​##### 5、framework结合carthage的实践
-​carthage和cocoapod一样是一个三方库管理工具, [carthage和cocoapod的区别](http://www.hangge.com/blog/cache/detail_1359.html)  。因为carthage只生成framework，所以更符合我们这种混编的framework的需求。因为它目前流行于swift第三方库中，对于一些老的OC库还不支持，比如Masonry。所以这里按自己需求使用。
-​
-​##### 6、上线之前，最好将framework进行拆包，只上传Release真机包到app store。
-​拆包，将需要的架构拆出来，整合成新的架构
-​
-​```
-​$ lipo BTCore -thin armv7 -output BTCoreV7 //将BTCore中armv7架构拆出来，生成一个叫BTCoreV7可执行文件
-​$ lipo BTCore -thin arm64 -output BTCore64   //将BTCore中arm64架构拆出来，生成一个叫BTCore64可执行文件
-​$ lipo -create BTCoreV7 BTCore64 -output BTCoreV764 //将BTCoreV7 BTCore64整合成一个新的BTCoreV764
-​```
-​
-​
-​
-​##### 7、码过留坑
-​###### 1、framework中OC与Swift类的相互调用(无法使用bridging导致的锅)
-​
-​因为framework无法使用bridging，所以swift中使用到的OC的类，必须得放到public中。然后在xx.h (xx是项目名称)中按说明的格式import进来
-​
-​###### 2、framework里的swift使用pod里的OC类(无法使用bridging导致的锅)
-​因为framework无法使用bridging，所以pod里的oc类无法通过上述方式导入，而应该通过将第三方pod生成framework导入，即在podfile中添加 use_framework!。但是要注意的是，此时生成的framework在xcode中还显示红色，得把mach-type和Allow non-modular..设置好，build之后才能在pod文件夹找到framework。
-​
-​###### 3、dyld: Library not loaded: @rpath/libswiftCore.dylib (Demo里没有swift bridge导致的锅)
-​说明framework里有swift类，但是demo中没有创建swift bridge。所以去创建一个就好了
-​
-​######4、Reason: image not found
-​embedded没有framework导致的。
-​
-​###### 5、无法使用framework里的类(request改成optional导致的锅)
-​实际上，request是不允许改成optional的，否则运行时是没法使用framework里的类，正确的做法就是去查看framework的allow non_module是否配置成功。然后确保demo中embedded中是否存在自己的framework。
-​
-​##### 8、framework存在的问题
-​* 因为framework只暴露了头文件，所以没法对其进行调试。这会是一个很蛋疼的问题
-​
-​
-​##### 9、后续优化
-​* 1、优化API设计
-​* 2、给每个子模块创建Demo，添加测试代码
-​* 4、在每个子模块中写登录脚本实现登录
-​* 5、framework自动正好到主项目的工具链
-​
-​
-​[喵神的打造让人愉快的框架](https://onevcat.com/2016/01/create-framework/)
-​[小鱼的dump砸壳](http://zhoulingyu.com/2016/08/30/iOS%E6%94%BB%E9%98%B2%E2%80%94%E2%80%94%EF%BC%88%E5%9B%9B%EF%BC%89class-dump%20%E4%B8%8E%20Dumpdecrypted%20%E4%BD%BF%E7%94%A8/)
-​[framework中使用cocoapod](https://www.jianshu.com/p/8650864c6c15)
-​[豆瓣模块化](http://lincode.github.io/Modularity)
-​[组件化——动态库实践](http://www.cocoachina.com/ios/20170427/19136.html)
-​
-​
-​
+###### 6、库循环依赖问题
+There is a circular dependency between BTCore/ThirdParty and BTCore/Kit 
+
+出现这个问题的原因是由于pod库里面有子分支，每个子分支也是一个单独的pod库，所以分支之间文件的引用如果不要pch的话，就需要使用dependency做依赖。因为子分支有可能会有相互引用到对方文件的问题，所以如果使用dependency，就有可能会相互依赖的问题，最后导致circular dependency。
+
+目前的解决问题就是子分支也解耦。如果子分支无法解耦，那就使用pch全局引入需要用到的文件。不过这也导致一个问题，那就是子分支就没法单独做pod使用了。所以最好的解决方案是解耦。
+
+###### 7、pch使用
+
+语法： prefix_header_file: 预编译头文件路径，将该文件的内容插入到Pod的pch文件内 
+1:ERROR | [iOS] unknown: Encountered an unknown error (No such file or directory @ rb_sysopen - /private/var/folders/n2/0fyx87s539j43pqj65tnwccc0000gn/T/CocoaPods-Lint-20180829-11315-7jhkz-BTCore/Pods/BTCore/BTCore/Classes/prefixHeader.pch) during validation.
+
+目前得出的结论，pch除了能在PodDemo中使用，在pod库中，完全就是绊脚石般的存在
+
+###### 8、压死骆驼的最后一根稻草 
+
+xcodebuild: Returned an unsuccessful exit code. You can use `--verbose` for more information.
+
+这他妈不知道是什么原因呀
+
+初步估计是因为pch的问题。查看了很多第三方pod，发现压根不使用pch这玩意。而且每次error后的note也都是提示pch里的import文件not found。
+
+所以，首先。准备好子分支之间的拆分。不能出现循环依赖的问题，不能相互import，总之pch没有作用。
+
+掉进坑里，挣扎出不来了！！
+
+pod lib lint --allow-warnings 忽略警告的验证过程
+
+pod repo push mySpec myLibrary.podspec —allow-warnings  
+
+
+
+##### 9、pod存在的问题：
+
+###### 1、文件夹问题
+
+pod暴露的东西只存在public_header_files中，而且目前没有找到文件夹区分层次关系的问题。
+
+###### 2、生成的pod与实际能够使用的pod有区别
+
+生成的pod在demo中和实际验证之后pod update下来的pod文件层次是不一样的，感觉非常不友好。而且及时生成了pod，验证也存在很多问题，且问题难以定位。
+
+
+[cocoapod创建私有库](http://blog.wtlucky.com/blog/2015/02/26/create-private-podspec/) 
+
+[podspec资源文件的引用](https://juejin.im/post/5a77fb8df265da4e99576702) 
+
+[写podspec](https://segmentfault.com/a/1190000012269307) 
+
+[cocoapod guide](https://guides.cocoapods.org/) 
+
+
+
+## cocoa touch framework实践
+##### 1、什么是动态库
+库Library是一段编译好的二进制文件，如果想自己的实现代码不暴露给别人，就可以使用库的形式进行封装，编译的时候只需要link就好。链接又存在静态链接和动态链接两种方式，于是便产生了静态库和动态库。
+
+静态库即.a文件(windows的lib)，静态库编译的时候会将二进制文件直接copy进目标程序中，之后将随着一起加载，所以也就导致目标文件太大的问题。
+
+动态库则是.tab、.dylib文件，与动态库不同的是编译的时候不会被copy，而是只在目标文件中存一份动态库的引用。它不会导致体积问题，但是动态载入的时候也会导致一些性能损耗。
+
+Framework是一直打包方式，它将二进制文件、头文件、资源文件打包到一起。
+
+##### 、创建自己的framework
+###### 1、创建framework
+打开xcode 选择创建 cocoa touch framework 就可以了。
+这里有几点注意：
+* 创建动态库需要去setting中将mach-Type改成Dynamic Library
+* 如果要引入其他的framework，需要去setting中将**Allow non-modular includes in Framework Modules** 改成YES。
+* 如果有使用swift，需要去设置好swift的版本
+* framework不允许存在其他的framework
+* 如果是Swift&OC混编的framework，则要把swift中使用到的OC头文件在Header中放到public中，因为framework不支持bridge
+* 将要对外的头文件也放到Header的public中
+* 把需要添加的依赖库加上，尤其是使用了第三方，比如wechatsdk的
+
+###### 2、使用framework
+* 将framework拖进来后，将framework copy一份。确保Embedded Binaries存在你的framework
+* 如果framework中有swift文件而当前工程还没有swift文件，则需要先创建一个swift bridge。
+* 将原来framework依赖到的第三方也要pod进来
+
+###### 3、framework使用其他第三方framework
+* 苹果禁止在Dynamic Framework中使用Framework。比如alipay。而pod的framework也只是将引用打包进去。所以这种依赖要在自己的framework的readme中注释清楚。
+
+###### 4、给framework添加armv7s架构
+模拟器对应的内核框架中，32位处理器对应的是i386，64位处理器对应的是x86_64
+
+真机内核情况如下：
+
+armv7: iPhone4 以下机型、iPad mini、iPod、iPad3以下
+
+armv7s: iPhone5、iPhone5C、iPad4
+
+arm64: iPhone5s以上、iPad air、iPad mini2
+
+在Architectures添加完armv7s后，一直报error: Invalid bitcode signature ;  clang: error: linker command failed with exit code 1 (use -v to see invocation)。
+
+解决的步骤就是：将DeviceData删掉，然后给所有pod导进来的framework添加上armv7s。重新编译就OK了。
+
+##### 3、整合framework，将模拟器和真机的debug、release包整合到一起
+首先将每一次build都只有一个包产生。而要产生release和debug包得分别在release和debug下进行编译，这样在Debug-iphoneos下两个文件夹才有对应的包。然后在将Build Active Architecture Only设置成NO(包括pod库里的target)，这样才能在切换真机与模拟器的同时编译出对应的iphoneos和iphonesimulator包
+
+使用 [命令行打包](http://msching.github.io/blog/2014/05/05/custom-framework-merging/)  
+
+
+```
+//查看包的内核架构有哪些：
+$lipo -info /Users/fengcaifan/Library/Developer/Xcode/DerivedData/BTCore-foehvkpuvmgklxekqrhynchxldkr/Build/Products/Release-iphoneos/BTCore.framework/BTCore 
+// armv7 armv7s arm64 
+```
+
+```
+//将Debug环境下的真机和模拟器一同打包：
+$cd 到包目录
+
+$lipo -create Debug-iphoneos/BTCore.framework/BTCore Debug-iphonesimulator/BTCore.framework/BTCore -output BTCoreDebugFramework //结束后会产生一个包
+
+$lipo -info BTCoreDebugFramework //查看包内容 Architectures in the fat file: BTCoreDebugFramework are: i386 x86_64 armv7 armv7s arm64
+
+//这里执行完是整合出一个可执行文件，还并不是.framework。所以只需将这个可执行文件将上述任意framework里的可执行文件替换掉就可以使用了。
+```
+
+* 这里碰到一个问题，使用cocoapod的库，使用Aggregate 脚本打包一直报swift找不到pod库。
+
+##### 4、framework结合cocoapod的实践
+framework中使用cocoapod是将需要依赖的第三方库以pod的形式导入进来。但是要注意的一点就是framework如果是swift项目或者保存swift混编，则需要将pod库打包成framework。
+
+##### 5、framework结合carthage的实践
+carthage和cocoapod一样是一个三方库管理工具, [carthage和cocoapod的区别](http://www.hangge.com/blog/cache/detail_1359.html)  。因为carthage只生成framework，所以更符合我们这种混编的framework的需求。因为它目前流行于swift第三方库中，对于一些老的OC库还不支持，比如Masonry。所以这里按自己需求使用。
+
+##### 6、上线之前，最好将framework进行拆包，只上传Release真机包到app store。
+拆包，将需要的架构拆出来，整合成新的架构
+
+```
+$ lipo BTCore -thin armv7 -output BTCoreV7 //将BTCore中armv7架构拆出来，生成一个叫BTCoreV7可执行文件
+$ lipo BTCore -thin arm64 -output BTCore64   //将BTCore中arm64架构拆出来，生成一个叫BTCore64可执行文件
+$ lipo -create BTCoreV7 BTCore64 -output BTCoreV764 //将BTCoreV7 BTCore64整合成一个新的BTCoreV764
+```
+
+
+
+##### 7、码过留坑
+###### 1、framework中OC与Swift类的相互调用(无法使用bridging导致的锅)
+
+因为framework无法使用bridging，所以swift中使用到的OC的类，必须得放到public中。然后在xx.h (xx是项目名称)中按说明的格式import进来
+
+###### 2、framework里的swift使用pod里的OC类(无法使用bridging导致的锅)
+因为framework无法使用bridging，所以pod里的oc类无法通过上述方式导入，而应该通过将第三方pod生成framework导入，即在podfile中添加 use_framework!。但是要注意的是，此时生成的framework在xcode中还显示红色，得把mach-type和Allow non-modular..设置好，build之后才能在pod文件夹找到framework。
+
+###### 3、dyld: Library not loaded: @rpath/libswiftCore.dylib (Demo里没有swift bridge导致的锅)
+说明framework里有swift类，但是demo中没有创建swift bridge。所以去创建一个就好了
+
+######4、Reason: image not found
+embedded没有framework导致的。
+
+###### 5、无法使用framework里的类(request改成optional导致的锅)
+实际上，request是不允许改成optional的，否则运行时是没法使用framework里的类，正确的做法就是去查看framework的allow non_module是否配置成功。然后确保demo中embedded中是否存在自己的framework。
+
+##### 8、framework存在的问题
+* 因为framework只暴露了头文件，所以没法对其进行调试。这会是一个很蛋疼的问题
+
+
+##### 9、后续优化
+* 1、优化API设计
+* 2、给每个子模块创建Demo，添加测试代码
+* 4、在每个子模块中写登录脚本实现登录
+* 5、framework自动正好到主项目的工具链
+
+
+[喵神的打造让人愉快的框架](https://onevcat.com/2016/01/create-framework/)
+[小鱼的dump砸壳](http://zhoulingyu.com/2016/08/30/iOS%E6%94%BB%E9%98%B2%E2%80%94%E2%80%94%EF%BC%88%E5%9B%9B%EF%BC%89class-dump%20%E4%B8%8E%20Dumpdecrypted%20%E4%BD%BF%E7%94%A8/)
+[framework中使用cocoapod](https://www.jianshu.com/p/8650864c6c15)
+[豆瓣模块化](http://lincode.github.io/Modularity)
+[组件化——动态库实践](http://www.cocoachina.com/ios/20170427/19136.html)
+
+
+
 
