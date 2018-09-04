@@ -200,11 +200,10 @@ ERROR | [iOS] file patterns: The `resource_bundles` pattern for `SVProgressHUD` 
 --allow-warnings 忽略警告的验证过程
 
 ###### 2、资源文件问题bundle
+resource和resource_bundles的差异，参考[简书](https://juejin.im/post/5a77fb8df265da4e99576702)
 
-​resource和resource_bundles的差异，参考[resource和resource_bundles](https://juejin.im/post/5a77fb8df265da4e99576702)
-​
-​###### 3、subspec分支问题、文件夹问题
-​
+###### 3、subspec分支问题、文件夹问题
+
 ​目前所知文件夹是没法做层级的，只有分子分支，每个子分支会是一个文件夹。
 ​
 ​###### 4、swift混编问题
@@ -263,13 +262,13 @@ ERROR | [iOS] file patterns: The `resource_bundles` pattern for `SVProgressHUD` 
 ​​​​​​​​​​生成的pod在demo中和实际验证之后pod update下来的pod文件层次是不一样的，感觉非常不友好。而且及时生成了pod，验证也存在很多问题，且问题难以定位。
 ​​​​​​​​​​
 ​​​​​​​​​​
- ​​​​​​​​​​[cocoapod创建私有库](http://blog.wtlucky.com/blog/2015/02/26/create-private-podspec/)
+​​​​​​​​​​[cocoapod创建私有库](http://blog.wtlucky.com/blog/2015/02/26/create-private-podspec/) 
 ​​​​​​​​​​
- ​​​​​​​​​​[podspec资源文件的引用](https://juejin.im/post/5a77fb8df265da4e99576702)
+​​​​​​​​​​[podspec资源文件的引用](https://juejin.im/post/5a77fb8df265da4e99576702) 
 ​​​​​​​​​​
- ​​​​​​​​​​[写podspec](https://segmentfault.com/a/1190000012269307)
+​​​​​​​​​​[写podspec](https://segmentfault.com/a/1190000012269307) 
 ​​​​​​​​​​
- ​​​​​​​​​​[cocoapod guide](https://guides.cocoapods.org/)
+​​​​​​​​​​[cocoapod guide](https://guides.cocoapods.org/) 
 ​​​​​​​​​​
 ​​​​​​​​​​
 ​​​​​​​​​​
@@ -321,7 +320,8 @@ ERROR | [iOS] file patterns: The `resource_bundles` pattern for `SVProgressHUD` 
 ​​​​​​​​​​##### 3、整合framework，将模拟器和真机的debug、release包整合到一起
 ​​​​​​​​​​首先将每一次build都只有一个包产生。而要产生release和debug包得分别在release和debug下进行编译，这样在Debug-iphoneos下两个文件夹才有对应的包。然后在将Build Active Architecture Only设置成NO(包括pod库里的target)，这样才能在切换真机与模拟器的同时编译出对应的iphoneos和iphonesimulator包
 ​​​​​​​​​​
-​​​​​​​​​​使用 [命令行打包](http://msching.github.io/blog/2014/05/05/custom-framework-merging/)：
+​​​​​​​​​​使用 [命令行打包](http://msching.github.io/blog/2014/05/05/custom-framework-merging/)  
+​​​​​​​​​​
 ​​​​​​​​​​
 ​​​​​​​​​​```
 ​​​​​​​​​​//查看包的内核架构有哪些：
@@ -346,7 +346,7 @@ ERROR | [iOS] file patterns: The `resource_bundles` pattern for `SVProgressHUD` 
 ​​​​​​​​​​​framework中使用cocoapod是将需要依赖的第三方库以pod的形式导入进来。但是要注意的一点就是framework如果是swift项目或者保存swift混编，则需要将pod库打包成framework。
 ​​​​​​​​​​​
 ​​​​​​​​​​​##### 5、framework结合carthage的实践
-​​​​​​​​​​​​carthage和cocoapod一样是一个三方库管理工具，[carthage和cocoapod的区别](http://www.hangge.com/blog/cache/detail_1359.html)。因为carthage只生成framework，所以更符合我们这种混编的framework的需求。因为它目前流行于swift第三方库中，对于一些老的OC库还不支持，比如Masonry。所以这里按自己需求使用。
+​​​​​​​​​​​​carthage和cocoapod一样是一个三方库管理工具, [carthage和cocoapod的区别](http://www.hangge.com/blog/cache/detail_1359.html)  。因为carthage只生成framework，所以更符合我们这种混编的framework的需求。因为它目前流行于swift第三方库中，对于一些老的OC库还不支持，比如Masonry。所以这里按自己需求使用。
 ​​​​​​​​​​​​
 ​​​​​​​​​​​​##### 6、上线之前，最好将framework进行拆包，只上传Release真机包到app store。
 ​​​​​​​​​​​​拆包，将需要的架构拆出来，整合成新的架构
