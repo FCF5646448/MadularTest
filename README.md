@@ -2,11 +2,11 @@
 
 模块化优势: 各模块代码与资源独立使用与维护、独立测试、各模块业务需求利于使用与维护、加快二次启动速度(使用framework的前提下)
 
-###cocoapod 私有库实践
+### cocoapod 私有库实践
 
 要完成一个pod私有化全过程，需要三个仓库(主项目仓库、pod库仓库、PodDemo项目仓库)、两个项目(主项目、PodDemo项目)
 
-#####1、在repo下创建私有库(要远程仓库)
+##### 1、在repo下创建私有库(要远程仓库)
 
 cd到cocoapods目录下查看本地的仓库，会发现大概的文件路径是 ~/.cocoapods/repos/master …  这是系统中有使用到cocoapod后，在install pod的时候，会从cocoapod官网下载一份所有的库的podspec文件集合。这些都是共有库的资源。所有项目需要使用pod库的时候会在这里索引，如果search不到，那就需要更新一下你的本地索引了。
 
@@ -22,7 +22,7 @@ $pod repo add BTCore https://xx@gitlab.btclass.cn/xx/BTCore.git
 
 OK，这一步就是顺便完成了上面提到的pod库仓库。暂且搁置一旁！
 
-#####2、创建一个新的PodDemo(要远程仓库)
+##### 2、创建一个新的PodDemo(要远程仓库)
 
 PodDemo就是讲代码打包成pod库工具，另外它本身是一个完整的测试pod库的项目。在将代码打包的前提需要先代码编译通过，所以可以在demo里尽情调试。
 
@@ -69,7 +69,7 @@ BTCoreDemo
 
 
 
-#####3、将代码移到Demo中，编译成功后，update编译成pod库，并及时将代码更新到远程仓库，注意设置tag
+##### 3、将代码移到Demo中，编译成功后，update编译成pod库，并及时将代码更新到远程仓库，注意设置tag
 
 接下来将解耦后的独立代码放到Classes文件中
 
@@ -83,7 +83,7 @@ $pod update     //完成后会将class里的东西打包成pod库
 
 但是不是将代码移过来就完成了，首先需要验证pod库，而这第一步就是保证当前Demo工程编译通过。
 
-#####4、配置podspec（最重要）
+##### 4、配置podspec（最重要）
 
 在编译通过的前提下，就可以对pod进行一些定制化的操作。
 
@@ -154,7 +154,7 @@ $pod lib lint
 
 
 
-#####5、将编译验证完成的podspec库push到第一步创建的repo私有库中（完成后会看到私有库的远程仓库也会有一份podspec），在podspec文件层级下进行
+##### 5、将编译验证完成的podspec库push到第一步创建的repo私有库中（完成后会看到私有库的远程仓库也会有一份podspec），在podspec文件层级下进行
 
 ```
 $pod repo push BTCoreDemo BTCoreDemo.podspec --allow-warnings
@@ -164,7 +164,7 @@ $pod repo push BTCoreDemo BTCoreDemo.podspec --allow-warnings
 
 至此，说明pod库是可用的了。
 
-#####6、检测是否能search到私有库 
+##### 6、检测是否能search到私有库 
 
 ```
 $pod search BTCoreDemo
@@ -176,7 +176,7 @@ $pod search BTCoreDemo
 $rm ~/Library/Caches/CocoaPods/search_index.json 
 ```
 
-#####7、将pod成功的私有库添加到原来的项目中
+##### 7、将pod成功的私有库添加到原来的项目中
 
 编译原来项目的Podfile，将BTCoreDemo添加进去。
 
@@ -187,11 +187,11 @@ source 'https://github.com/CocoaPods/Specs.git'  # 官方库
 source 'https://xx@gitlab.btclass.cn/xx/BTCore.git' #私有库
 ```
 
-#####8、码过留坑
+##### 8、码过留坑
 
 这里整理一下遇到的问题及解决的方案：
 
-######1、pod lib lint 中碰到的各种error和warn
+###### 1、pod lib lint 中碰到的各种error和warn
 
 ERROR | [iOS] file patterns: The `resource_bundles` pattern for `SVProgressHUD` did not match any file. 
 
@@ -199,34 +199,34 @@ ERROR | [iOS] file patterns: The `resource_bundles` pattern for `SVProgressHUD` 
 
 --allow-warnings 忽略警告的验证过程
 
-######2、资源文件问题bundle
+###### 2、资源文件问题bundle
 
 ​resource和resource_bundles的差异，参考[resource和resource_bundles](https://juejin.im/post/5a77fb8df265da4e99576702)
 ​
-​######3、subspec分支问题、文件夹问题
+​###### 3、subspec分支问题、文件夹问题
 ​
 ​目前所知文件夹是没法做层级的，只有分子分支，每个子分支会是一个文件夹。
 ​
-​######4、swift混编问题
+​###### 4、swift混编问题
 ​
 ​无论swift文件在哪里，使用#import <XX/XX-swift.h>导入swift桥接文件
 ​
 ​这里的XX指的是pod包的名称，其次要注意的是swift类应该用@objc标注声明
 ​
-​######5、编译不通过
+​###### 5、编译不通过
 ​
 ​Returned an unsuccessful exit code. You can use `--verbose` for more information.
 ​
 ​打成pod包的前提就是编译一定要通过，所以这个没有捷径可走
 ​
-​######6、库循环依赖问题
+​###### 6、库循环依赖问题
 ​There is a circular dependency between BTCore/ThirdParty and BTCore/Kit 
 ​
 ​出现这个问题的原因是由于pod库里面有子分支，每个子分支也是一个单独的pod库，所以分支之间文件的引用如果不要pch的话，就需要使用dependency做依赖。因为子分支有可能会有相互引用到对方文件的问题，所以如果使用dependency，就有可能会相互依赖的问题，最后导致circular dependency。
 ​
 ​目前的解决问题就是子分支也解耦。如果子分支无法解耦，那就使用pch全局引入需要用到的文件。不过这也导致一个问题，那就是子分支就没法单独做pod使用了。所以最好的解决方案是解耦。
 ​
-​######7、pch使用
+​###### 7、pch使用
 ​
 ​​语法： prefix_header_file: 预编译头文件路径，将该文件的内容插入到Pod的pch文件内 
 ​​
@@ -234,7 +234,7 @@ ERROR | [iOS] file patterns: The `resource_bundles` pattern for `SVProgressHUD` 
 ​​​
 ​​​​目前得出的结论，pch除了能在PodDemo中使用，在pod库中，完全就是绊脚石般的存在
 ​​​​
-​​​​######8、压死骆驼的最后一根稻草 
+​​​​###### 8、压死骆驼的最后一根稻草 
 ​​​​
 ​​​​​xcodebuild: Returned an unsuccessful exit code. You can use `--verbose` for more information.
 ​​​​​
@@ -252,29 +252,29 @@ ERROR | [iOS] file patterns: The `resource_bundles` pattern for `SVProgressHUD` 
 ​​​​​​​​
 ​​​​​​​​
 ​​​​​​​​
-​​​​​​​​#####9、pod存在的问题：
+​​​​​​​​##### 9、pod存在的问题：
 ​​​​​​​​
-​​​​​​​​######1、文件夹问题
+​​​​​​​​###### 1、文件夹问题
 ​​​​​​​​
 ​​​​​​​​​pod暴露的东西只存在public_header_files中，而且目前没有找到文件夹区分层次关系的问题。
 ​​​​​​​​​
-​​​​​​​​​######2、生成的pod与实际能够使用的pod有区别
+​​​​​​​​​###### 2、生成的pod与实际能够使用的pod有区别
 ​​​​​​​​​
 ​​​​​​​​​​生成的pod在demo中和实际验证之后pod update下来的pod文件层次是不一样的，感觉非常不友好。而且及时生成了pod，验证也存在很多问题，且问题难以定位。
 ​​​​​​​​​​
 ​​​​​​​​​​
-​​​​​​​​​​[cocoapod创建私有库](http://blog.wtlucky.com/blog/2015/02/26/create-private-podspec/)
+ ​​​​​​​​​​[cocoapod创建私有库](http://blog.wtlucky.com/blog/2015/02/26/create-private-podspec/)
 ​​​​​​​​​​
-​​​​​​​​​​[podspec资源文件的引用](https://juejin.im/post/5a77fb8df265da4e99576702)
+ ​​​​​​​​​​[podspec资源文件的引用](https://juejin.im/post/5a77fb8df265da4e99576702)
 ​​​​​​​​​​
-​​​​​​​​​​[写podspec](https://segmentfault.com/a/1190000012269307)
+ ​​​​​​​​​​[写podspec](https://segmentfault.com/a/1190000012269307)
 ​​​​​​​​​​
-​​​​​​​​​​[cocoapod guide](https://guides.cocoapods.org/)
+ ​​​​​​​​​​[cocoapod guide](https://guides.cocoapods.org/)
 ​​​​​​​​​​
 ​​​​​​​​​​
 ​​​​​​​​​​
-​​​​​​​​​​##cocoa touch framework实践
-​​​​​​​​​​#####1、什么是动态库
+​​​​​​​​​​## cocoa touch framework实践
+​​​​​​​​​​##### 1、什么是动态库
 ​​​​​​​​​​库Library是一段编译好的二进制文件，如果想自己的实现代码不暴露给别人，就可以使用库的形式进行封装，编译的时候只需要link就好。链接又存在静态链接和动态链接两种方式，于是便产生了静态库和动态库。
 ​​​​​​​​​​
 ​​​​​​​​​​静态库即.a文件(windows的lib)，静态库编译的时候会将二进制文件直接copy进目标程序中，之后将随着一起加载，所以也就导致目标文件太大的问题。
@@ -283,8 +283,8 @@ ERROR | [iOS] file patterns: The `resource_bundles` pattern for `SVProgressHUD` 
 ​​​​​​​​​​
 ​​​​​​​​​​Framework是一直打包方式，它将二进制文件、头文件、资源文件打包到一起。
 ​​​​​​​​​​
-​​​​​​​​​​#####2、创建自己的framework
-​​​​​​​​​​######1、创建framework
+​​​​​​​​​​##### 、创建自己的framework
+​​​​​​​​​​###### 1、创建framework
 ​​​​​​​​​​打开xcode 选择创建 cocoa touch framework 就可以了。
 ​​​​​​​​​​这里有几点注意：
 ​​​​​​​​​​* 创建动态库需要去setting中将mach-Type改成Dynamic Library
@@ -295,15 +295,15 @@ ERROR | [iOS] file patterns: The `resource_bundles` pattern for `SVProgressHUD` 
 ​​​​​​​​​​* 将要对外的头文件也放到Header的public中
 ​​​​​​​​​​* 把需要添加的依赖库加上，尤其是使用了第三方，比如wechatsdk的
 ​​​​​​​​​​
-​​​​​​​​​​######2、使用framework
+​​​​​​​​​​###### 2、使用framework
 ​​​​​​​​​​* 将framework拖进来后，将framework copy一份。确保Embedded Binaries存在你的framework
 ​​​​​​​​​​* 如果framework中有swift文件而当前工程还没有swift文件，则需要先创建一个swift bridge。
 ​​​​​​​​​​* 将原来framework依赖到的第三方也要pod进来
 ​​​​​​​​​​
-​​​​​​​​​​######3、framework使用其他第三方framework
+​​​​​​​​​​###### 3、framework使用其他第三方framework
 ​​​​​​​​​​* 苹果禁止在Dynamic Framework中使用Framework。比如alipay。而pod的framework也只是将引用打包进去。所以这种依赖要在自己的framework的readme中注释清楚。
 ​​​​​​​​​​
-​​​​​​​​​​######4、给framework添加armv7s架构
+​​​​​​​​​​###### 4、给framework添加armv7s架构
 ​​​​​​​​​​模拟器对应的内核框架中，32位处理器对应的是i386，64位处理器对应的是x86_64
 ​​​​​​​​​​
 ​​​​​​​​​​真机内核情况如下：
@@ -318,7 +318,7 @@ ERROR | [iOS] file patterns: The `resource_bundles` pattern for `SVProgressHUD` 
 ​​​​​​​​​​
 ​​​​​​​​​​解决的步骤就是：将DeviceData删掉，然后给所有pod导进来的framework添加上armv7s。重新编译就OK了。
 ​​​​​​​​​​
-​​​​​​​​​​#####3、整合framework，将模拟器和真机的debug、release包整合到一起
+​​​​​​​​​​##### 3、整合framework，将模拟器和真机的debug、release包整合到一起
 ​​​​​​​​​​首先将每一次build都只有一个包产生。而要产生release和debug包得分别在release和debug下进行编译，这样在Debug-iphoneos下两个文件夹才有对应的包。然后在将Build Active Architecture Only设置成NO(包括pod库里的target)，这样才能在切换真机与模拟器的同时编译出对应的iphoneos和iphonesimulator包
 ​​​​​​​​​​
 ​​​​​​​​​​使用 [命令行打包](http://msching.github.io/blog/2014/05/05/custom-framework-merging/)：
@@ -342,13 +342,13 @@ ERROR | [iOS] file patterns: The `resource_bundles` pattern for `SVProgressHUD` 
 ​​​​​​​​​​
 ​​​​​​​​​​* 这里碰到一个问题，使用cocoapod的库，使用Aggregate 脚本打包一直报swift找不到pod库。
 ​​​​​​​​​​
-​​​​​​​​​​#####4、framework结合cocoapod的实践
+​​​​​​​​​​##### 4、framework结合cocoapod的实践
 ​​​​​​​​​​​framework中使用cocoapod是将需要依赖的第三方库以pod的形式导入进来。但是要注意的一点就是framework如果是swift项目或者保存swift混编，则需要将pod库打包成framework。
 ​​​​​​​​​​​
-​​​​​​​​​​​#####5、framework结合carthage的实践
+​​​​​​​​​​​##### 5、framework结合carthage的实践
 ​​​​​​​​​​​​carthage和cocoapod一样是一个三方库管理工具，[carthage和cocoapod的区别](http://www.hangge.com/blog/cache/detail_1359.html)。因为carthage只生成framework，所以更符合我们这种混编的framework的需求。因为它目前流行于swift第三方库中，对于一些老的OC库还不支持，比如Masonry。所以这里按自己需求使用。
 ​​​​​​​​​​​​
-​​​​​​​​​​​​#####6、上线之前，最好将framework进行拆包，只上传Release真机包到app store。
+​​​​​​​​​​​​##### 6、上线之前，最好将framework进行拆包，只上传Release真机包到app store。
 ​​​​​​​​​​​​拆包，将需要的架构拆出来，整合成新的架构
 ​​​​​​​​​​​​
 ​​​​​​​​​​​​```
@@ -359,28 +359,28 @@ ERROR | [iOS] file patterns: The `resource_bundles` pattern for `SVProgressHUD` 
 ​​​​​​​​​​​​
 ​​​​​​​​​​​​
 ​​​​​​​​​​​​
-​​​​​​​​​​​​#####7、码过留坑
-​​​​​​​​​​​​######1、framework中OC与Swift类的相互调用(无法使用bridging导致的锅)
+​​​​​​​​​​​​##### 7、码过留坑
+​​​​​​​​​​​​###### 1、framework中OC与Swift类的相互调用(无法使用bridging导致的锅)
 ​​​​​​​​​​​​
 ​​​​​​​​​​​​​因为framework无法使用bridging，所以swift中使用到的OC的类，必须得放到public中。然后在xx.h (xx是项目名称)中按说明的格式import进来
 ​​​​​​​​​​​​​
-​​​​​​​​​​​​​######2、framework里的swift使用pod里的OC类(无法使用bridging导致的锅)
+​​​​​​​​​​​​​###### 2、framework里的swift使用pod里的OC类(无法使用bridging导致的锅)
 ​​​​​​​​​​​​​​因为framework无法使用bridging，所以pod里的oc类无法通过上述方式导入，而应该通过将第三方pod生成framework导入，即在podfile中添加 use_framework!。但是要注意的是，此时生成的framework在xcode中还显示红色，得把mach-type和Allow non-modular..设置好，build之后才能在pod文件夹找到framework。
 ​​​​​​​​​​​​​​
-​​​​​​​​​​​​​​######3、dyld: Library not loaded: @rpath/libswiftCore.dylib (Demo里没有swift bridge导致的锅)
+​​​​​​​​​​​​​​###### 3、dyld: Library not loaded: @rpath/libswiftCore.dylib (Demo里没有swift bridge导致的锅)
 ​​​​​​​​​​​​​​说明framework里有swift类，但是demo中没有创建swift bridge。所以去创建一个就好了
 ​​​​​​​​​​​​​​
 ​​​​​​​​​​​​​​######4、Reason: image not found
 ​​​​​​​​​​​​​​embedded没有framework导致的。
 ​​​​​​​​​​​​​​
-​​​​​​​​​​​​​​######5、无法使用framework里的类(request改成optional导致的锅)
+​​​​​​​​​​​​​​###### 5、无法使用framework里的类(request改成optional导致的锅)
 ​​​​​​​​​​​​​​实际上，request是不允许改成optional的，否则运行时是没法使用framework里的类，正确的做法就是去查看framework的allow non_module是否配置成功。然后确保demo中embedded中是否存在自己的framework。
 ​​​​​​​​​​​​​​
-​​​​​​​​​​​​​​#####8、framework存在的问题
+​​​​​​​​​​​​​​##### 8、framework存在的问题
 ​​​​​​​​​​​​​​* 因为framework只暴露了头文件，所以没法对其进行调试。这会是一个很蛋疼的问题
 ​​​​​​​​​​​​​​
 ​​​​​​​​​​​​​​
-​​​​​​​​​​​​​​#####9、后续优化
+​​​​​​​​​​​​​​##### 9、后续优化
 ​​​​​​​​​​​​​​* 1、优化API设计
 ​​​​​​​​​​​​​​* 2、给每个子模块创建Demo，添加测试代码
 ​​​​​​​​​​​​​​* 4、在每个子模块中写登录脚本实现登录
